@@ -4,11 +4,17 @@ import path from "path";
 import { ApiError } from "../utils/apiError";
 import logger from "../../../../app/utils/logger";
 
-const allowedMimeTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "video/mp4"];
+const allowedMimeTypes = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  // "video/mp4",
+];
 
 const storage = multer.memoryStorage();
 
-const fileFilter = (req: Request, file: any, cb: FileFilterCallback) => {
+const fileFilter = (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
   if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {

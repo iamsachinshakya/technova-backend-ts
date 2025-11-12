@@ -1,11 +1,12 @@
-// import { UserRepository } from "./modules/users/repositories/user.repository.js";
+import { MongoUserRepository } from "./modules/users/repositories/mongoose/user.repository";
+import { IUserRepository } from "./modules/users/repositories/user.repository.interface";
 
-// export class RepositoryProvider {
-//   static _userRepositoryInstance;
+export class RepositoryProvider {
+    private static _userRepositoryInstance: MongoUserRepository;
 
-//   static get userRepository() {
-//     if (!this._userRepositoryInstance)
-//       this._userRepositoryInstance = new UserRepository();
-//     return this._userRepositoryInstance;
-//   }
-// }
+    static get userRepository(): IUserRepository {
+        if (!this._userRepositoryInstance)
+            this._userRepositoryInstance = new MongoUserRepository();
+        return this._userRepositoryInstance;
+    }
+}

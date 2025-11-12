@@ -19,10 +19,10 @@ const envSchema = z.object({
     DB_NAME: z.string().optional(),
 
     // JWT
-    ACCESS_TOKEN_SECRET: z.string().min(8, "ACCESS_TOKEN_SECRET must be at least 8 characters").optional(),
-    ACCESS_TOKEN_EXPIRY: z.string().optional(),
-    REFRESH_TOKEN_SECRET: z.string().min(8, "REFRESH_TOKEN_SECRET must be at least 8 characters").optional(),
-    REFRESH_TOKEN_EXPIRY: z.string().optional(),
+    ACCESS_TOKEN_SECRET: z.string().min(8, "ACCESS_TOKEN_SECRET must be at least 8 characters"),
+    ACCESS_TOKEN_EXPIRY: z.string(),
+    REFRESH_TOKEN_SECRET: z.string().min(8, "REFRESH_TOKEN_SECRET must be at least 8 characters"),
+    REFRESH_TOKEN_EXPIRY: z.string(),
 
     // Logging
     LOG_LEVEL: z.enum(LogLevel).default(LogLevel.DEBUG),
