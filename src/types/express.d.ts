@@ -4,7 +4,7 @@ declare global {
     namespace Express {
         interface Request {
             user?: IAuthUser;
-            file?: Express.Multer.File;   // for avatar / cover uploads
+            file?: Express.Multer.File;   // for avatar / photos uploads
         }
     }
 }

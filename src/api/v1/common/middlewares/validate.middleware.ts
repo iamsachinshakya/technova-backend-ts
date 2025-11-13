@@ -22,6 +22,27 @@ export const validateBody = (schema: ZodTypeAny): RequestHandler => {
   };
 };
 
+
+/**
+ * Middleware to validate query parameters using a Zod schema
+ * @param schema - Zod schema for req.query
+ */
+export const validateQuery = (schema: ZodTypeAny): RequestHandler => {
+  return (req: Request, _res: Response, next: NextFunction) => {
+    try {
+      schema.parse(req.query); // validate query params
+      next();
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const message =
+          error.issues?.[0]?.message || "Invalid query parameters";
+        return next(new ApiError(message, 400, error.issues));
+      }
+      next(new ApiError("Invalid query parameters", 400));
+    }
+  };
+};
+
 /**
  * Middleware to validate uploaded file(s) and optional body using Zod schema
  * @example

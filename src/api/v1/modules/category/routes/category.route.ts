@@ -2,10 +2,10 @@ import { Router } from "express";
 import { asyncHandler } from "../../../common/utils/asyncHandler";
 import { authenticateJWT } from "../../../common/middlewares/auth.middleware";
 import { ControllerProvider } from "../../../ControllerProvider";
-import { validateBody, validateFileSchema } from "../../../common/middlewares/validate.middleware";
+import { validateBody, validateFileSchema, validateQuery } from "../../../common/middlewares/validate.middleware";
 import { uploadSingle } from "../../../common/middlewares/upload.middleware";
 import { imageSchema } from "../../users/validations/user.validation";
-import { createCategorySchema, updateCategorySchema } from "../validations/category.validation";
+import { createCategorySchema, queryCategorySchema, updateCategorySchema } from "../validations/category.validation";
 
 export const categoryRouter = Router();
 const categoryController = ControllerProvider.categoryController;
@@ -18,6 +18,7 @@ const categoryController = ControllerProvider.categoryController;
 categoryRouter.get(
     "/",
     authenticateJWT,
+    validateQuery(queryCategorySchema),
     asyncHandler(categoryController.getAll.bind(categoryController))
 );
 

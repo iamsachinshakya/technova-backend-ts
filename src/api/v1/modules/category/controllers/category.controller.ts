@@ -8,7 +8,7 @@ import { ICategoryController } from "./category.controller.interface";
 export class CategoryController implements ICategoryController {
     // ✅ Get all categories with optional filters
     async getAll(req: Request, res: Response): Promise<Response> {
-        const filter = req.query as any;
+        const filter = req.query as Partial<ICategoryEntity>;
         const categories = await ServiceProvider.categoryService.getCategories(filter);
         return ApiResponse.success(res, "Categories fetched successfully", categories);
     }

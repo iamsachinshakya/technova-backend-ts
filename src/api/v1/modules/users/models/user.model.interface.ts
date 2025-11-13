@@ -24,22 +24,18 @@ export interface IUserEntity {
     followers: string[];
     following: string[];
     refreshToken: string | null;
-    preferences: {
-        emailNotifications: boolean;
-        marketingUpdates: boolean;
-        twoFactorAuth: boolean;
-    };
+    preferences: IUserPreferences
     createdAt: Date;
     updatedAt: Date;
     lastLogin: Date | null;
 }
 
-export interface ISocialLinks {
-    twitter: string | null;
-    linkedin: string | null;
-    github: string | null;
-    website: string | null;
+export interface IUserPreferences {
+    emailNotifications: boolean;
+    marketingUpdates: boolean;
+    twoFactorAuth: boolean;
 }
+
 
 export interface ISocialLinks {
     twitter: string | null;

@@ -56,7 +56,11 @@ export const loginUserSchema = z.object({
     .regex(/[@$!%*?&#]/, "Password must contain at least one special character (@$!%*?&#)"),
 });
 
-
+/**
+ * Schema: Update User
+ * - All fields optional (for partial updates)
+ * - Includes nested preferences validation
+ */
 export const updateUserSchema = z.object({
   fullName: z
     .string()
@@ -93,7 +97,22 @@ export const updateUserSchema = z.object({
       website: z.string().url("Website must be a valid URL").optional(),
     })
     .optional(),
-});
+
+  preferences: z
+    .object({
+      emailNotifications: z.boolean().optional(),
+      marketingUpdates: z.boolean().optional(),
+      twoFactorAuth: z.boolean().optional(),
+    })
+    .optional(),
+})
+  .refine(
+    (data) => Object.values(data).some((v) => v !== undefined && v !== null),
+    {
+      message: "At least one field must be provided for update.",
+      path: [],
+    }
+  );
 
 export const imageSchema = z.object({
   file: z
