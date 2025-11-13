@@ -35,14 +35,14 @@ categoryRouter.get(
 
 /**
  * @route   POST /api/v1/categories
- * @desc    Create a new category with optional icon
+ * @desc    Update category details or icon (partial update)
  * @access  Private
  */
 categoryRouter.post(
     "/",
     authenticateJWT,
-    uploadSingle("icon"), // optional field, no error if missing
-    validateFileSchema(imageSchema, { optional: true }),
+    uploadSingle("icon"),
+    validateFileSchema(imageSchema, { optional: true }), // validate if present
     validateBody(createCategorySchema),
     asyncHandler(categoryController.create.bind(categoryController))
 );

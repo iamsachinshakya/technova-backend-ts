@@ -1,14 +1,23 @@
 import { Request, Response, NextFunction, RequestHandler } from "express";
-import { z, ZodError, ZodTypeAny } from "zod";
+import { z, ZodError, ZodType } from "zod";
 import { ApiError } from "../utils/apiError";
 
 /**
  * Middleware to validate plain JSON/body requests using Zod schema
  * @param schema - Zod schema for req.body
  */
-export const validateBody = (schema: ZodTypeAny): RequestHandler => {
+export const validateBody = (schema: ZodType): RequestHandler => {
   return (req: Request, _res: Response, next: NextFunction) => {
     try {
+
+      // If request has a file but no form fields like body, skip validation (e.g., file-only upload)
+      if (req.file || req.files) {
+        const hasBodyData = req.body && Object.keys(req.body).length > 0;
+        if (!hasBodyData) {
+          return next();
+        }
+      }
+
       schema.parse(req.body);
       next();
     } catch (error) {
@@ -27,7 +36,7 @@ export const validateBody = (schema: ZodTypeAny): RequestHandler => {
  * Middleware to validate query parameters using a Zod schema
  * @param schema - Zod schema for req.query
  */
-export const validateQuery = (schema: ZodTypeAny): RequestHandler => {
+export const validateQuery = (schema: ZodType): RequestHandler => {
   return (req: Request, _res: Response, next: NextFunction) => {
     try {
       schema.parse(req.query); // validate query params
@@ -56,8 +65,8 @@ export const validateQuery = (schema: ZodTypeAny): RequestHandler => {
  * });
  */
 export const validateFileSchema = (
-  schema: ZodTypeAny,
-  options?: { optional?: boolean } // Add this
+  schema: ZodType,
+  options?: { optional?: boolean }
 ): RequestHandler => {
   return (req: Request, _res: Response, next: NextFunction) => {
     try {

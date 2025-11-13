@@ -36,9 +36,7 @@ export interface ICreateCategory {
  */
 export interface IUpdateCategory {
     name?: string; // Update category name
-    slug?: string; // Optional, auto-updated if name changes
     description?: string; // Optional description, max 500 chars
-    icon?: string; // Optional icon
     color?: string; // Optional hex color
     parentId?: string | null; // Optional parent category ID
     isActive?: boolean; // Optional active flag

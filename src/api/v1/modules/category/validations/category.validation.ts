@@ -16,22 +16,23 @@ export const createCategorySchema = z.object({
     isActive: z.boolean().optional().default(true),
 });
 
-
 /**
  * Schema: Update Category
- * - Each field is optional (for partial updates)
+ * - All fields optional (for partial updates)
  * - Must include at least one valid field
  */
 export const updateCategorySchema = z
     .object({
         name: z
             .string()
+            .trim()
             .min(1, "Name must not be empty")
             .max(100, "Name must be less than 100 characters")
             .optional(),
 
         description: z
             .string()
+            .trim()
             .max(500, "Description must be less than 500 characters")
             .optional(),
 
@@ -46,18 +47,23 @@ export const updateCategorySchema = z
             .nullable()
             .optional(),
 
-        isActive: z
-            .boolean()
-            .optional(),
+        isActive: z.boolean().optional(),
     })
-    // Custom validation: must include at least one field
+    .strict() // Reject unknown keys
     .refine(
-        (data) => Object.values(data).some((value) => value !== undefined && value !== null),
+        (data) =>
+            Object.values(data).some(
+                (value) =>
+                    value !== undefined &&
+                    value !== null &&
+                    (typeof value !== "string" || value.trim() !== "")
+            ),
         {
             message: "At least one field must be provided for update.",
             path: [],
         }
     );
+
 
 
 /**
