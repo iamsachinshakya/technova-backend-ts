@@ -8,6 +8,8 @@ import {
   loginUserSchema,
 } from "../../users/validations/user.validation";
 import { authenticateJWT } from "../middlewares/auth.middleware";
+import { requirePermission } from "../middlewares/requirePermission";
+import { PERMISSIONS } from "../constants/auth.constant";
 
 export const authRouter = Router();
 const authController = ControllerProvider.authController;
@@ -47,7 +49,7 @@ authRouter.post(
 /**
  * @route   POST /api/v1/auth/logout
  * @desc    Logout the current user and invalidate tokens
- * @access  Private
+ * @access  Private (Requires user update permission)
  */
 authRouter.post(
   "/logout",
@@ -58,11 +60,12 @@ authRouter.post(
 /**
  * @route   POST /api/v1/auth/change-password
  * @desc    Change password for the logged-in user
- * @access  Private
+ * @access  Private (Requires user update permission)
  */
 authRouter.post(
   "/change-password",
   authenticateJWT,
+  requirePermission(PERMISSIONS.USER.CHANGE_PASSWORD),
   validateBody(updatePasswordSchema),
   asyncHandler(authController.changePassword.bind(authController))
 );
