@@ -1,68 +1,81 @@
 import { Request, Response, NextFunction, RequestHandler } from "express";
 import { z, ZodError, ZodType } from "zod";
 import { ApiError } from "../utils/apiError";
+import { ErrorCode } from "../constants.ts/errorCodes";
 
 /**
- * Middleware to validate plain JSON/body requests using Zod schema
- * @param schema - Zod schema for req.body
+ * Validate JSON/body using Zod schema
  */
 export const validateBody = (schema: ZodType): RequestHandler => {
   return (req: Request, _res: Response, next: NextFunction) => {
     try {
-
-      // If request has a file but no form fields like body, skip validation (e.g., file-only upload)
-      if (req.file || req.files) {
-        const hasBodyData = req.body && Object.keys(req.body).length > 0;
-        if (!hasBodyData) {
-          return next();
-        }
+      // Allow file uploads without body
+      if ((req.file || req.files) && (!req.body || Object.keys(req.body).length === 0)) {
+        return next();
       }
 
       schema.parse(req.body);
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        const message =
-          error.issues?.[0]?.message || "Invalid request body";
-        return next(new ApiError(message, 400, error.issues));
+        const message = error.issues?.[0]?.message || "Invalid request body";
+        return next(
+          new ApiError(
+            message,
+            400,
+            ErrorCode.VALIDATION_ERROR,
+            error.issues
+          )
+        );
       }
-      next(new ApiError("Invalid request body", 400));
+
+      next(
+        new ApiError(
+          "Invalid request body",
+          400,
+          ErrorCode.VALIDATION_ERROR
+        )
+      );
     }
   };
 };
 
-
 /**
- * Middleware to validate query parameters using a Zod schema
- * @param schema - Zod schema for req.query
+ * Validate Query Parameters
  */
 export const validateQuery = (schema: ZodType): RequestHandler => {
   return (req: Request, _res: Response, next: NextFunction) => {
     try {
-      schema.parse(req.query); // validate query params
+      schema.parse(req.query);
       next();
     } catch (error) {
       if (error instanceof ZodError) {
         const message =
           error.issues?.[0]?.message || "Invalid query parameters";
-        return next(new ApiError(message, 400, error.issues));
+
+        return next(
+          new ApiError(
+            message,
+            400,
+            ErrorCode.VALIDATION_ERROR,
+            error.issues
+          )
+        );
       }
-      next(new ApiError("Invalid query parameters", 400));
+
+      next(
+        new ApiError(
+          "Invalid query parameters",
+          400,
+          ErrorCode.VALIDATION_ERROR
+        )
+      );
     }
   };
 };
 
 /**
- * Middleware to validate uploaded file(s) and optional body using Zod schema
- * @example
- * const schema = z.object({
- *   body: z.object({ title: z.string().min(3) }),
- *   file: z.object({
- *     originalname: z.string(),
- *     mimetype: z.string(),
- *     buffer: z.instanceof(Buffer)
- *   }),
- * });
+ * Validate File + Body Schema
  */
 export const validateFileSchema = (
   schema: ZodType,
@@ -75,10 +88,13 @@ export const validateFileSchema = (
       } else if (Array.isArray(req.files)) {
         schema.parse({ files: req.files, body: req.body });
       } else if (options?.optional) {
-        // Skip validation if optional and no file
         return next();
       } else {
-        throw new ApiError("No file(s) provided", 400);
+        throw new ApiError(
+          "No file(s) provided",
+          400,
+          ErrorCode.VALIDATION_ERROR
+        );
       }
 
       next();
@@ -86,8 +102,17 @@ export const validateFileSchema = (
       if (error instanceof ZodError) {
         const message =
           error.issues?.[0]?.message || "Invalid file upload data";
-        return next(new ApiError(message, 400, error.issues));
+
+        return next(
+          new ApiError(
+            message,
+            400,
+            ErrorCode.VALIDATION_ERROR,
+            error.issues
+          )
+        );
       }
+
       next(error);
     }
   };
