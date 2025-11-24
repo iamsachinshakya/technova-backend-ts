@@ -4,7 +4,7 @@ import { ApiError } from "../../../common/utils/apiError";
 import { verifyToken } from "../utils/jwt.util";
 import { IAuthUser } from "../../users/models/user.model.interface";
 import { env } from "../../../../../app/config/env";
-import { RepositoryProvider } from "../../../RepositoryProvider";
+import { ErrorCode } from "../../../common/constants.ts/errorCodes";
 
 /**
  *   Middleware: Authenticate requests using JWT
@@ -16,27 +16,47 @@ import { RepositoryProvider } from "../../../RepositoryProvider";
 export const authenticateJWT = asyncHandler(
     async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
         const authHeader = req.header("Authorization");
+
         const token =
             req.cookies?.accessToken ||
             (authHeader?.startsWith("Bearer ") ? authHeader.split(" ")[1] : undefined);
 
-        if (!token) throw new ApiError("Unauthorized request – token missing", 401);
+        if (!token) {
+            throw new ApiError(
+                "Unauthorized request – token missing",
+                401,
+                ErrorCode.TOKEN_MISSING
+            );
+        }
 
-        // Verify token and decode user payload
-        const decoded = verifyToken(token, env.ACCESS_TOKEN_SECRET) as IAuthUser;
+        let decoded: IAuthUser;
+        try {
+            decoded = verifyToken(token, env.ACCESS_TOKEN_SECRET) as IAuthUser;
+        } catch (error: any) {
 
-        if (!decoded?.id) throw new ApiError("Invalid or malformed token", 401);
+            const isExpired = error?.name === "TokenExpiredError";
 
-        // Validate user existence (optional but recommended for production)
-        const user = await RepositoryProvider.userRepository.findById(decoded.id);
-        if (!user) throw new ApiError("Invalid or expired access token", 401);
+            throw new ApiError(
+                isExpired ? "Access token expired" : "Invalid access token",
+                401,
+                isExpired ? ErrorCode.ACCESS_TOKEN_EXPIRED : ErrorCode.TOKEN_INVALID
+            );
+        }
+
+        if (!decoded?.id) {
+            throw new ApiError(
+                "Invalid or malformed token payload",
+                401,
+                ErrorCode.TOKEN_INVALID
+            );
+        }
 
         req.user = {
-            id: user.id,
-            email: user.email,
-            username: user.username,
-            fullName: user.fullName,
-            role: user.role,
+            id: decoded.id,
+            email: decoded.email,
+            username: decoded.username,
+            fullName: decoded.fullName,
+            role: decoded.role,
         };
 
         next();

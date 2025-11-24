@@ -1,7 +1,8 @@
 import { Response } from "express";
+import { ErrorCode } from "../constants.ts/errorCodes";
 
 /**
- * A standard API response helper for consistent response structure.
+ * Standard API response helper for consistent response structure.
  */
 export class ApiResponse {
   public success: boolean;
@@ -10,19 +11,33 @@ export class ApiResponse {
   public data?: any;
   public meta?: any;
   public errors?: any;
+  public errorCode?: ErrorCode;
 
-  constructor(
-    success: boolean,
-    message: string,
-    data: any = null,
-    statusCode: number = 200,
-    meta: any = null
-  ) {
+  constructor({
+    success,
+    message,
+    data,
+    statusCode = 200,
+    meta,
+    errors,
+    errorCode,
+  }: {
+    success: boolean;
+    message: string;
+    data?: any;
+    statusCode?: number;
+    meta?: any;
+    errors?: any;
+    errorCode?: ErrorCode;
+  }) {
     this.success = success;
     this.message = message;
     this.statusCode = statusCode;
-    if (data !== null) this.data = data;
-    if (meta !== null) this.meta = meta;
+
+    if (data !== undefined) this.data = data;
+    if (meta !== undefined) this.meta = meta;
+    if (errors !== undefined) this.errors = errors;
+    if (errorCode !== undefined) this.errorCode = errorCode;
   }
 
   /**
@@ -35,21 +50,35 @@ export class ApiResponse {
     statusCode: number = 200,
     meta: any = null
   ) {
-    const response = new ApiResponse(true, message, data, statusCode, meta);
+    const response = new ApiResponse({
+      success: true,
+      message,
+      data,
+      statusCode,
+      meta,
+    });
+
     return res.status(statusCode).json(response);
   }
 
   /**
-   * Send an error response
+   * Send an error response (compatible with ApiError)
    */
   static error(
     res: Response,
     message: string = "Error",
     statusCode: number = 500,
-    errors: any = null
+    errors: any = null,
+    errorCode?: ErrorCode
   ) {
-    const response = new ApiResponse(false, message, null, statusCode);
-    if (errors) response.errors = errors;
+    const response = new ApiResponse({
+      success: false,
+      message,
+      statusCode,
+      errors,
+      errorCode,
+    });
+
     return res.status(statusCode).json(response);
   }
 }

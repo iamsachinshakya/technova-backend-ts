@@ -4,28 +4,53 @@ import { ApiResponse } from "../utils/apiResponse";
 import logger from "../../../../app/utils/logger";
 import { ApiError } from "../utils/apiError";
 import { Environment } from "../../../../app/config/constants";
+import { ErrorCode } from "../constants.ts/errorCodes";
 
 /**
  * Global error-handling middleware for Express
  */
 export const errorMiddleware = (
-  err: any,
+  err: unknown,
   req: Request,
   res: Response,
   next: NextFunction
 ): Response => {
-  logger.error("🔥 Error:", err);
+  const error = err as any;
 
-  // Handle custom ApiError
-  if (err instanceof ApiError && err.isOperational) {
-    return ApiResponse.error(res, err.message, err.statusCode, err.errors);
+  logger.error("🔥 Error:", {
+    message: error?.message,
+    stack: error?.stack,
+    errorCode: error?.errorCode,
+    errors: error?.errors,
+  });
+
+  /* ---------------------------------------------------------
+     ✅ HANDLE CUSTOM ApiError (Operational Errors)
+  ----------------------------------------------------------*/
+  if (error instanceof ApiError && error.isOperational) {
+    return ApiResponse.error(
+      res,
+      error.message,
+      error.statusCode,
+      error.errors ?? null,
+      error.errorCode
+    );
   }
 
-  // Fallback for unexpected/unhandled errors
-  const message =
-    env.NODE_ENV === Environment.DEVELOPMENT
-      ? err.stack || err.message
-      : "Something went wrong! Please try again later.";
+  /* ---------------------------------------------------------
+     ❌ HANDLE UNKNOWN / UNEXPECTED ERRORS
+  ----------------------------------------------------------*/
+  const isDev = env.NODE_ENV === Environment.DEVELOPMENT;
 
-  return ApiResponse.error(res, message, 500);
+  const safeMessage = isDev
+    ? error?.stack || error?.message || "Unexpected internal error"
+    : "Something went wrong! Please try again later.";
+
+  return ApiResponse.error(
+    res,
+    safeMessage,
+    500,
+    null,
+    ErrorCode.INTERNAL_SERVER_ERROR
+  );
 };

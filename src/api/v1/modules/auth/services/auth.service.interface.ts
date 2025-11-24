@@ -20,7 +20,7 @@ export interface IAuthService {
 
     refreshAccessToken(
         incomingRefreshToken: string
-    ): Promise<{ accessToken: string; refreshToken: string }>;
+    ): Promise<{ accessToken: string }>;
 
     changeUserPassword(data: {
         oldPassword: string;
