@@ -7,10 +7,9 @@ import { env } from "../../../../../app/config/env";
 import { ErrorCode } from "../../../common/constants/errorCodes";
 
 /**
- *   Middleware: Authenticate requests using JWT
+ * Middleware: Authenticate requests using JWT
  * - Extracts token from cookies or Authorization header
  * - Verifies and decodes token payload
- * - Confirms user exists in the database
  * - Attaches `req.user` for downstream authorization checks
  */
 export const authenticateJWT = asyncHandler(
@@ -19,7 +18,7 @@ export const authenticateJWT = asyncHandler(
 
         const token =
             req.cookies?.accessToken ||
-            (authHeader?.startsWith("Bearer ") ? authHeader.split(" ")[1] : undefined);
+            (authHeader?.startsWith("Bearer ") ? authHeader.replace("Bearer ", "").trim() : undefined);
 
         if (!token) {
             throw new ApiError(
@@ -33,13 +32,30 @@ export const authenticateJWT = asyncHandler(
         try {
             decoded = verifyToken(token, env.ACCESS_TOKEN_SECRET) as IAuthUser;
         } catch (error: any) {
+            const errorMessage = error?.message?.toLowerCase() || "";
 
-            const isExpired = error?.name === "TokenExpiredError";
+            if (error instanceof ApiError || error?.name === "Error") {
+                if (errorMessage.includes("jwt expired") || errorMessage.includes("expired")) {
+                    throw new ApiError(
+                        "Access token expired",
+                        401,
+                        ErrorCode.ACCESS_TOKEN_EXPIRED
+                    );
+                }
+            }
+
+            if (error?.name === "TokenExpiredError") {
+                throw new ApiError(
+                    "Access token expired",
+                    401,
+                    ErrorCode.ACCESS_TOKEN_EXPIRED
+                );
+            }
 
             throw new ApiError(
-                isExpired ? "Access token expired" : "Invalid access token",
+                "Invalid access token",
                 401,
-                isExpired ? ErrorCode.ACCESS_TOKEN_EXPIRED : ErrorCode.TOKEN_INVALID
+                ErrorCode.TOKEN_INVALID
             );
         }
 
