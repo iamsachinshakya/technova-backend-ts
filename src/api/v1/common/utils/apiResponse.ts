@@ -1,5 +1,5 @@
 import { Response } from "express";
-import { ErrorCode } from "../constants.ts/errorCodes";
+import { ErrorCode } from "../constants/errorCodes";
 
 /**
  * Standard API response helper for consistent response structure.

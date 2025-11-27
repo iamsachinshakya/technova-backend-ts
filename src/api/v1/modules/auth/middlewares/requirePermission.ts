@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { ApiError } from "../../../common/utils/apiError";
 import { UserRole } from "../../users/models/user.model.interface";
 import { RolePermissions } from "../constants/auth.constant";
-import { ErrorCode } from "../../../common/constants.ts/errorCodes";
+import { ErrorCode } from "../../../common/constants/errorCodes";
 
 /**
  * Middleware to check if the authenticated user

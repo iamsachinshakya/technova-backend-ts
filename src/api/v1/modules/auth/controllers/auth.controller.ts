@@ -4,7 +4,7 @@ import { ServiceProvider } from "../../../ServiceProvider";
 import { secureCookieOptions } from "../utils/auth.util";
 import { IAuthController } from "./auth.controller.interface";
 import { ApiError } from "../../../common/utils/apiError";
-import { ErrorCode } from "../../../common/constants.ts/errorCodes";
+import { ErrorCode } from "../../../common/constants/errorCodes";
 
 export class AuthController implements IAuthController {
 

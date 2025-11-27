@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction, RequestHandler } from "express";
 import { z, ZodError, ZodType } from "zod";
 import { ApiError } from "../utils/apiError";
-import { ErrorCode } from "../constants.ts/errorCodes";
+import { ErrorCode } from "../constants/errorCodes";
 
 /**
  * Validate JSON/body using Zod schema

@@ -4,7 +4,7 @@ import { ApiResponse } from "../utils/apiResponse";
 import logger from "../../../../app/utils/logger";
 import { ApiError } from "../utils/apiError";
 import { Environment } from "../../../../app/config/constants";
-import { ErrorCode } from "../constants.ts/errorCodes";
+import { ErrorCode } from "../constants/errorCodes";
 
 /**
  * Global error-handling middleware for Express

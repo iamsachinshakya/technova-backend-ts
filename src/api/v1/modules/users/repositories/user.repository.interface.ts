@@ -1,3 +1,4 @@
+import { SortOrder } from "mongoose";
 import { IRegisterData, IUpdateUserData, IUserEntity } from "../models/user.model.interface";
 
 export interface IUserRepository {
@@ -6,7 +7,17 @@ export interface IUserRepository {
     findByEmail(email: string, isRequiredSensitiveData?: boolean): Promise<IUserEntity | null>;
     findByUsername(username: string): Promise<IUserEntity | null>;
     findByEmailOrUsername(params: { email?: string; username?: string }): Promise<IUserEntity | null>;
-    findAll(sort?: Record<string, 1 | -1>): Promise<IUserEntity[]>;
+    /**
+      * Get all users with optional search, role filter, pagination, and sorting
+      * @param filter - Optional search and role filter
+      * @param options - Pagination and sorting options
+      * @returns Paginated data and total count
+      */
+    findAll(
+        filter: { search?: string; role?: string },
+        options: { page?: number; limit?: number; sort?: Record<string, SortOrder> }
+    ): Promise<{ data: IUserEntity[]; total: number }>
+
     updateById(id: string, data: Partial<IUserEntity>): Promise<IUserEntity | null>;
     deleteById(id: string): Promise<IUserEntity | null>;
     removeRefreshTokenById(userId: string): Promise<IUserEntity | null>;

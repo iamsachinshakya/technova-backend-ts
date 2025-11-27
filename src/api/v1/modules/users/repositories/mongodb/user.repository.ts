@@ -30,9 +30,49 @@ export class MongoUserRepository implements IUserRepository {
     return user ? this.toEntity(user) : null;
   }
 
-  async findAll(sort: Record<string, SortOrder> = { createdAt: -1 }) {
-    const users = await User.find().sort(sort);
-    return users.map((user) => this.toEntity(user));
+  async findAll(
+    filter: { search?: string; role?: string } = {},
+    options: { page?: number; limit?: number; sort?: Record<string, SortOrder> } = {}
+  ): Promise<{ data: IUserEntity[]; total: number }> {
+    const { page = 1, limit = 10, sort = { createdAt: -1 } } = options;
+    const skip = (page - 1) * limit;
+
+    const aggregationPipeline: any[] = [];
+    const match: any = {};
+
+    if (filter.search) {
+      match.$or = [
+        { fullName: { $regex: filter.search, $options: "i" } },
+        { email: { $regex: filter.search, $options: "i" } },
+        { username: { $regex: filter.search, $options: "i" } },
+      ];
+    }
+
+    if (filter.role && filter.role !== "all") {
+      match.role = filter.role;
+    }
+
+    if (Object.keys(match).length) {
+      aggregationPipeline.push({ $match: match });
+    }
+
+    aggregationPipeline.push({
+      $facet: {
+        data: [
+          { $sort: sort },
+          { $skip: skip },
+          { $limit: limit },
+        ],
+        totalCount: [{ $count: "count" }],
+      },
+    });
+
+    const result = await User.aggregate(aggregationPipeline);
+
+    const data = result[0]?.data?.map(this.toEntity.bind(this)) || [];
+    const total = result[0]?.totalCount[0]?.count || 0;
+
+    return { data, total };
   }
 
   async updateById(id: string, data: Partial<IUserEntity>): Promise<IUserEntity | null> {

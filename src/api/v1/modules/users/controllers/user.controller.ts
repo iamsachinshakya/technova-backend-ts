@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { ApiResponse } from "../../../common/utils/apiResponse";
 import { ServiceProvider } from "../../../ServiceProvider";
-import { ISocialLinks, IUpdateUserData, IUserPreferences } from "../../users/models/user.model.interface";
+import { ISocialLinks, IUpdateUserData, IUserPreferences, UsersQueryParams } from "../../users/models/user.model.interface";
 
 export class UserController {
 
@@ -13,9 +13,18 @@ export class UserController {
 
   //  Get all users
   async getAll(req: Request, res: Response): Promise<Response> {
-    const users = await ServiceProvider.userService.getAllUsers();
+    const query: UsersQueryParams = {
+      page: Number(req.query.page) || 1,
+      limit: Number(req.query.limit) || 10,
+      search: (req.query.search as string) || "",
+      role: (req.query.role as string) || "all",
+    };
+
+    const users = await ServiceProvider.userService.getAllUsers(query);
+
     return ApiResponse.success(res, "Users fetched successfully", users);
   }
+
 
   //  Get user by ID
   async getById(req: Request, res: Response): Promise<Response> {

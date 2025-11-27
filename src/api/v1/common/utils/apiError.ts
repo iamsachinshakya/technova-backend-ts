@@ -1,4 +1,4 @@
-import { ErrorCode } from "../constants.ts/errorCodes";
+import { ErrorCode } from "../constants/errorCodes";
 
 /**
  * Custom error class for handling operational (expected) errors gracefully.

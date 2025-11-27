@@ -7,10 +7,13 @@ import {
   IUserPreferences,
   ISocialLinks,
   ICreateUserData,
+  UsersQueryParams,
 } from "../../users/models/user.model.interface";
 import { IUserService } from "./user.service.interface";
-import { ErrorCode } from "../../../common/constants.ts/errorCodes";
+import { ErrorCode } from "../../../common/constants/errorCodes";
 import { hashPassword } from "../../auth/utils/bcrypt.util";
+import { UserPaginatedData } from "../../../common/models/pagination";
+import { PAGINATION_PAGE_LIMIT } from "../../../common/constants/constants";
 
 export class UserService implements IUserService {
 
@@ -32,9 +35,25 @@ export class UserService implements IUserService {
 
   }
 
-  async getAllUsers(): Promise<IUserEntity[]> {
-    return await RepositoryProvider.userRepository.findAll();
+  async getAllUsers(query: UsersQueryParams): Promise<UserPaginatedData> {
+    const { page = 1, limit = PAGINATION_PAGE_LIMIT, search = "", role = "all" } = query;
+
+    const { data, total } = await RepositoryProvider.userRepository.findAll(
+      { search, role },
+      { page, limit, sort: { createdAt: -1 } }
+    );
+
+    return {
+      data,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
+
 
   async getUserById(userId: string): Promise<IUserEntity> {
     const user = await RepositoryProvider.userRepository.findById(userId);
